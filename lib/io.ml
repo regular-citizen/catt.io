@@ -65,6 +65,20 @@ let rec parse lexbuf (checkpoint : (string list * cmd list) I.checkpoint) =
   | I.Rejected ->
        raise (Parse_error (None, "invalid syntax (parser rejected the input)"))
 
+let parse_string s =
+  let lexbuf =
+    Lexing.from_string s
+  in try
+      let p = parse lexbuf (Parser.Incremental.prog lexbuf.lex_curr_p) in Printf.sprintf "Success: %d, %d" (List.length (fst p)) (List.length (snd p)) with 
+  | Parse_error (Some (line,pos), err) ->
+    Printf.sprintf "Parse error: %sLine: %d, Pos: %d@," err line pos
+  | Parse_error (None, err) -> 
+    Printf.sprintf "Parse error: %s" err
+  | Lexer.Lexing_error (Some (line,pos), err) ->
+    Printf.sprintf "Lexing error: %s@,Line: %d, Pos: %d@," err line pos
+  | Lexer.Lexing_error (None, err) -> 
+    Printf.sprintf "Lexing error: %s@," err
+
 let parse_file f =
   let lexbuf =
     let fi = open_in f in
